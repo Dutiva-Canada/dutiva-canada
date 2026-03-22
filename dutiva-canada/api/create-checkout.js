@@ -1,13 +1,12 @@
-import Stripe from "stripe";
+const Stripe = require("stripe");
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const { userId, email } = req.body;
 
     if (!userId || !email) {
@@ -18,17 +17,10 @@ export default async function handler(req, res) {
       payment_method_types: ["card"],
       mode: "subscription",
       customer_email: email,
-      line_items: [
-        {
-          price: process.env.STRIPE_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+      success_url: `${req.headers.origin}/?upgraded=true`,
       cancel_url: `${req.headers.origin}/`,
-      metadata: {
-        supabase_user_id: userId,
-      },
+      metadata: { supabase_user_id: userId },
     });
 
     return res.status(200).json({ url: session.url });
@@ -36,4 +28,4 @@ export default async function handler(req, res) {
     console.error("Checkout error:", error);
     return res.status(500).json({ error: error.message });
   }
-}
+};
