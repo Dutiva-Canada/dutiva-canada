@@ -42,10 +42,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message });
   }
 }
-```
-
-**Ctrl+S**, then:
-```
-git add api/create-checkout.js
-git commit -m "Remove stripe dependency, use fetch directly"
-git push
