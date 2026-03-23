@@ -1049,7 +1049,7 @@ function fallbackCopy(text, onSuccess) {
   document.body.appendChild(ta);
   ta.focus();
   ta.select();
-  try { document.execCommand("copy"); onSuccess(); } catch {}
+  try { document.execCommand("copy"); onSuccess(); } catch { /* clipboard fallback may fail silently */ }
   document.body.removeChild(ta);
 }
 
@@ -1300,7 +1300,7 @@ export default function Dutiva() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFilled, setAiFilled] = useState(false); // tracks if AI fill has run
-  const [signatures, setSignatures] = useState({});
+  const [_signatures, setSignatures] = useState({});
   const [chatFiles, setChatFiles] = useState([]);
   const [showPrintView, setShowPrintView] = useState(false);
   const chatFileRef = useRef(null);
@@ -1329,6 +1329,31 @@ export default function Dutiva() {
         setSavedDocs(docs || []);
         setLang(profile?.lang || "en");
         nav("dashboard");
+
+        // Handle Stripe checkout redirect: poll for webhook to update plan
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("upgraded") === "true") {
+          // Clean up URL
+          window.history.replaceState({}, "", window.location.pathname);
+
+          // If profile already shows pro, we're done
+          if (profile?.plan === "pro") return;
+
+          // Poll for the webhook to update the plan (up to 15 seconds)
+          const pollForPro = async (attempts) => {
+            for (let i = 0; i < attempts; i++) {
+              await new Promise(r => setTimeout(r, 2000));
+              try {
+                const updated = await loadProfile();
+                if (updated?.plan === "pro") {
+                  setUser(updated);
+                  return;
+                }
+              } catch { /* retry on next iteration */ }
+            }
+          };
+          pollForPro(8);
+        }
       } else {
         nav("welcome");
       }
@@ -1337,7 +1362,7 @@ export default function Dutiva() {
     const unsub = onAuthChange((session) => {
       if (!session) { setUser(null); nav("welcome"); }
     });
-    return unsub;
+
     // Inject PWA meta tags for cross-platform optimization
     const head = document.head;
     const metas = [
@@ -1358,6 +1383,8 @@ export default function Dutiva() {
     });
     // Set page title
     document.title = "Dutiva Canada";
+
+    return unsub;
   }, []);
 
   // Smart defaults from profile
@@ -1450,7 +1477,7 @@ export default function Dutiva() {
   const handlePDF = () => {
     setShowPrintView(true);
     setTimeout(() => {
-      try { window.print(); } catch(e) {}
+      try { window.print(); } catch { /* print dialog may be blocked */ }
       // Keep print view open so user can retry or close manually
     }, 400);
   };
@@ -1476,7 +1503,7 @@ export default function Dutiva() {
   const handleLogout = async () => {
     try { await logOut(); } catch (err) { console.error("Logout error:", err); }
     setUser(null);
-    setAuthForm({ name: "", email: "", password: "" });
+    setAuthForm({ name: "", email: "", password: "", tosAccepted: false });
     nav("welcome");
   };
 
@@ -1659,7 +1686,7 @@ BOUNDARIES — NON-NEGOTIABLE:
       const data = await response.json();
       const reply = data.content?.map(b => b.type === "text" ? b.text : "").join("") || (lang === "en" ? "I couldn't process that request. Please try again." : "Je n'ai pas pu traiter cette demande. Veuillez réessayer.");
       setChatMessages(prev => [...prev, { role: "assistant", content: reply }]);
-    } catch (err) {
+    } catch {
       setChatMessages(prev => [...prev, { role: "assistant", content: lang === "en" ? "Connection error. Please check your network and try again." : "Erreur de connexion. Vérifiez votre réseau et réessayez." }]);
     } finally {
       setChatLoading(false);
@@ -2317,7 +2344,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
           </div></FadeIn>
           <FadeIn delay={200}>
             <button className="cta" disabled={!onboardForm.companyName} onClick={handleOnboard}>{t("Complete Setup →","Terminer →")}</button>
-            <button className="bg" onClick={()=>{const u={...user,onboarded:true};setUser(u);saveUser(u);nav("dashboard")}}>{t("Skip for now","Passer")}</button>
+            <button className="bg" onClick={()=>{const u={...user,onboarded:true};setUser(u);updateProfile({onboarded:true}).catch(()=>{});nav("dashboard")}}>{t("Skip for now","Passer")}</button>
           </FadeIn>
         </>}
 
@@ -2814,7 +2841,7 @@ FORMAT: Use ## for headers. **Bold** for legislation, section numbers, deadlines
           <div className="print-bar-title">{t("Print / Export Document","Imprimer / Exporter le document")}</div>
           <div className="print-bar-actions">
             <button className="print-bar-btn print-bar-secondary" onClick={()=>setShowPrintView(false)}>{t("Close","Fermer")}</button>
-            <button className="print-bar-btn print-bar-primary" onClick={()=>{try{window.print()}catch(e){}}}>{t("Print / Save as PDF","Imprimer / Enregistrer en PDF")}</button>
+            <button className="print-bar-btn print-bar-primary" onClick={()=>{try{window.print()}catch{ /* print may be blocked */ }}}>{t("Print / Save as PDF","Imprimer / Enregistrer en PDF")}</button>
           </div>
         </div>
         <div className="print-doc-wrap">
