@@ -1329,6 +1329,31 @@ export default function Dutiva() {
         setSavedDocs(docs || []);
         setLang(profile?.lang || "en");
         nav("dashboard");
+
+        // Handle Stripe checkout redirect: poll for webhook to update plan
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("upgraded") === "true") {
+          // Clean up URL
+          window.history.replaceState({}, "", window.location.pathname);
+
+          // If profile already shows pro, we're done
+          if (profile?.plan === "pro") return;
+
+          // Poll for the webhook to update the plan (up to 15 seconds)
+          const pollForPro = async (attempts) => {
+            for (let i = 0; i < attempts; i++) {
+              await new Promise(r => setTimeout(r, 2000));
+              try {
+                const updated = await loadProfile();
+                if (updated?.plan === "pro") {
+                  setUser(updated);
+                  return;
+                }
+              } catch { /* retry on next iteration */ }
+            }
+          };
+          pollForPro(8);
+        }
       } else {
         nav("welcome");
       }
