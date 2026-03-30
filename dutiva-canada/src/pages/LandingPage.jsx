@@ -207,7 +207,18 @@ const GLOBAL_CSS = `
   .du-fade-up-2 { animation: fadeUp 0.7s 0.13s ease both; }
   .du-fade-up-3 { animation: fadeUp 0.7s 0.19s ease both; }
   .du-fade-up-4 { animation: fadeUp 0.7s 0.25s ease both; }
-  @media (max-width: 860px) { .du-nav-links { display: none !important; } }
+  /* ── Max-width container ── */
+  .du-inner { max-width: 1200px; margin: 0 auto; width: 100%; }
+  /* ── Hamburger button ── */
+  .du-hamburger { display: none; align-items: center; justify-content: center; cursor: pointer; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 8px; }
+  /* ── Mobile nav drawer ── */
+  .du-mobile-nav { display: none; flex-direction: column; position: fixed; top: 64px; left: 0; right: 0; z-index: 99; padding: 16px 24px 24px; gap: 4px; border-bottom-width: 1px; border-bottom-style: solid; }
+  .du-mobile-nav.open { display: flex !important; }
+  /* ── Mobile breakpoints ── */
+  @media (max-width: 860px) {
+    .du-nav-links { display: none !important; }
+    .du-hamburger { display: flex !important; }
+  }
   @media (max-width: 720px) {
     .du-about-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
     .du-stat { border-right: none !important; border-bottom-width: 1px !important; border-bottom-style: solid !important; }
@@ -216,7 +227,16 @@ const GLOBAL_CSS = `
     .du-section { padding: 72px 20px !important; }
     .du-hero { padding: 110px 20px 72px !important; }
     .du-nav { padding: 0 20px !important; }
-    .du-footer { flex-direction: column !important; align-items: flex-start !important; padding: 32px 20px !important; }
+    .du-footer-inner { flex-direction: column !important; align-items: flex-start !important; }
+  }
+  /* ── Desktop breakpoints ── */
+  @media (min-width: 1024px) {
+    .du-hero-inner { flex-direction: row !important; text-align: left !important; align-items: center !important; gap: 80px !important; justify-content: space-between !important; }
+    .du-hero-text { align-items: flex-start !important; }
+    .du-hero-cta { align-items: flex-start !important; max-width: 400px !important; }
+    .du-hero-pills { justify-content: flex-start !important; }
+    .du-hero-side { display: flex !important; }
+    .du-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
   }
 `
 
@@ -264,6 +284,9 @@ export default function LandingPage() {
     localStorage.setItem('dutiva-lang', l)
   }
 
+  // Mobile nav
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
   // Waitlist
   const [email, setEmail]       = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -303,65 +326,91 @@ export default function LandingPage() {
       {/* ══ NAV ══ */}
       <nav className="du-nav" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 6%', height: 64,
         backgroundColor: t.navBg, backdropFilter: 'blur(16px)',
         borderBottom: `1px solid ${t.border}`, transition: trans,
       }}>
-        <a href="#hero" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 500, color: t.text, lineHeight: 1, transition: 'color 0.35s ease' }}>
-            Duti<span style={{ color: t.gold }}>va</span>
-          </div>
-          <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, border: `1px solid ${t.goldBorder}`, padding: '1px 6px', borderRadius: 2, lineHeight: 1.7, transition: trans }}>
-            Canada
-          </div>
-        </a>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div className="du-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-            {[['#features', x.navFeatures], ['#pricing', x.navPricing], ['#about', x.navAbout]].map(([href, label]) => (
-              <a key={href} href={href} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 400, color: t.textMid, letterSpacing: '0.02em', transition: 'color 0.2s' }}
-                onMouseEnter={e => e.target.style.color = t.text}
-                onMouseLeave={e => e.target.style.color = t.textMid}>
-                {label}
-              </a>
-            ))}
-            <a href="#waitlist" style={{ backgroundColor: t.gold, color: '#111', padding: '8px 20px', borderRadius: 100, fontWeight: 600, fontSize: 13, textDecoration: 'none', transition: 'background-color 0.2s', whiteSpace: 'nowrap' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = t.goldH}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = t.gold}>
-              {x.navCta}
-            </a>
-          </div>
-
-          {/* Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Language */}
-            <div style={{ display: 'flex', border: `1px solid ${t.border}`, borderRadius: 100, overflow: 'hidden', transition: 'border-color 0.35s ease' }}>
-              {['en', 'fr'].map(l => (
-                <button key={l} onClick={() => switchLang(l)} style={{
-                  background: lang === l ? t.gold : 'transparent',
-                  color: lang === l ? '#111' : t.textSoft,
-                  border: 'none', cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600,
-                  letterSpacing: '0.05em', padding: '5px 12px',
-                  transition: 'background-color 0.2s, color 0.2s',
-                }}>
-                  {l.toUpperCase()}
-                </button>
-              ))}
+        {/* Nav inner */}
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 6%', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <a href="#hero" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 500, color: t.text, lineHeight: 1, transition: 'color 0.35s ease' }}>
+              Duti<span style={{ color: t.gold }}>va</span>
             </div>
-            {/* Theme */}
-            <button onClick={toggleTheme} title="Toggle light/dark mode" style={{
-              background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 100,
-              cursor: 'pointer', width: 34, height: 28, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: 14, color: t.textSoft,
-              transition: 'border-color 0.35s ease, background-color 0.2s',
-            }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = t.border}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-              {theme === 'dark' ? '🌙' : '☀️'}
-            </button>
+            <div style={{ fontSize: 8, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, border: `1px solid ${t.goldBorder}`, padding: '1px 6px', borderRadius: 2, lineHeight: 1.7, transition: trans }}>
+              Canada
+            </div>
+          </a>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div className="du-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+              {[['#features', x.navFeatures], ['#pricing', x.navPricing], ['#about', x.navAbout]].map(([href, label]) => (
+                <a key={href} href={href} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 400, color: t.textMid, letterSpacing: '0.02em', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.target.style.color = t.text}
+                  onMouseLeave={e => e.target.style.color = t.textMid}>
+                  {label}
+                </a>
+              ))}
+              <a href="#waitlist" style={{ backgroundColor: t.gold, color: '#111', padding: '8px 20px', borderRadius: 100, fontWeight: 600, fontSize: 13, textDecoration: 'none', transition: 'background-color 0.2s', whiteSpace: 'nowrap' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = t.goldH}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = t.gold}>
+                {x.navCta}
+              </a>
+            </div>
+
+            {/* Controls */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Language */}
+              <div style={{ display: 'flex', border: `1px solid ${t.border}`, borderRadius: 100, overflow: 'hidden', transition: 'border-color 0.35s ease' }}>
+                {['en', 'fr'].map(l => (
+                  <button key={l} onClick={() => switchLang(l)} style={{
+                    background: lang === l ? t.gold : 'transparent',
+                    color: lang === l ? '#111' : t.textSoft,
+                    border: 'none', cursor: 'pointer',
+                    fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600,
+                    letterSpacing: '0.05em', padding: '5px 12px',
+                    transition: 'background-color 0.2s, color 0.2s',
+                  }}>
+                    {l.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+              {/* Theme */}
+              <button onClick={toggleTheme} title="Toggle light/dark mode" style={{
+                background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 100,
+                cursor: 'pointer', width: 34, height: 28, display: 'flex', alignItems: 'center',
+                justifyContent: 'center', fontSize: 14, color: t.textSoft,
+                transition: 'border-color 0.35s ease, background-color 0.2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = t.border}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                {theme === 'dark' ? '🌙' : '☀️'}
+              </button>
+              {/* Hamburger */}
+              <button className="du-hamburger" onClick={() => setMobileNavOpen(o => !o)}
+                style={{ borderColor: mobileNavOpen ? t.gold : t.border, color: t.textSoft, transition: trans }}>
+                <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+                  {mobileNavOpen
+                    ? <><line x1="1" y1="1" x2="17" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="17" y1="1" x2="1" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></>
+                    : <><line x1="0" y1="1" x2="18" y2="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="0" y1="7" x2="18" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="0" y1="13" x2="18" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></>
+                  }
+                </svg>
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Mobile nav drawer */}
+        <div className={`du-mobile-nav${mobileNavOpen ? ' open' : ''}`}
+          style={{ backgroundColor: t.navBg, backdropFilter: 'blur(16px)', borderBottomColor: t.border, transition: trans }}>
+          {[['#features', x.navFeatures], ['#pricing', x.navPricing], ['#about', x.navAbout]].map(([href, label]) => (
+            <a key={href} href={href} onClick={() => setMobileNavOpen(false)}
+              style={{ textDecoration: 'none', fontSize: 15, fontWeight: 400, color: t.textMid, padding: '12px 0', borderBottom: `1px solid ${t.border}`, transition: 'color 0.2s' }}>
+              {label}
+            </a>
+          ))}
+          <a href="#waitlist" onClick={() => setMobileNavOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 12, backgroundColor: t.gold, color: '#111', padding: '12px 20px', borderRadius: 100, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+            {x.navCta}
+          </a>
         </div>
       </nav>
 
@@ -374,62 +423,96 @@ export default function LandingPage() {
       }}>
         {/* Glow */}
         <div style={{ position: 'absolute', top: -180, left: '50%', transform: 'translateX(-50%)', width: 800, height: 500, borderRadius: '50%', background: `radial-gradient(ellipse, ${t.glow} 0%, transparent 65%)`, pointerEvents: 'none', zIndex: 0, transition: 'background 0.35s ease' }} />
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* Desktop: 2-col hero inner */}
+        <div className="du-hero-inner du-inner" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
 
-          <div className="du-fade-up" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(72px, 14vw, 120px)', fontWeight: 500, lineHeight: 1, letterSpacing: '-0.01em', color: t.text, marginBottom: 12, transition: 'color 0.35s ease' }}>
-            Duti<span style={{ color: t.gold }}>va</span>
-          </div>
-          <div className="du-fade-up-1" style={{ display: 'inline-block', fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: t.gold, border: `1px solid ${t.goldBorder}`, padding: '4px 14px', borderRadius: 3, marginBottom: 40, transition: trans }}>
-            Canada
-          </div>
-          <p className="du-fade-up-2" style={{ fontSize: 'clamp(16px, 2.2vw, 19px)', color: t.textMid, fontWeight: 300, maxWidth: 480, lineHeight: 1.75, marginBottom: 52, transition: 'color 0.35s ease' }}>
-            {x.heroTagline}
-          </p>
-
-          <div className="du-fade-up-3" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: '100%', maxWidth: 400 }}>
-            <a href="#waitlist" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: t.gold, color: '#111', padding: '16px 32px', borderRadius: 100, fontSize: 15, fontWeight: 600, textDecoration: 'none', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s, transform 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = t.goldH; e.currentTarget.style.transform = 'translateY(-1px)' }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = t.gold; e.currentTarget.style.transform = 'translateY(0)' }}>
-              {x.heroCta}
-            </a>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', color: t.textMuted, fontSize: 13 }}>
-              <div style={{ flex: 1, height: 1, backgroundColor: t.border }} />
-              {x.heroOr}
-              <div style={{ flex: 1, height: 1, backgroundColor: t.border }} />
+          {/* Left / text side */}
+          <div className="du-hero-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+            <div className="du-fade-up" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(64px, 12vw, 108px)', fontWeight: 500, lineHeight: 1, letterSpacing: '-0.01em', color: t.text, marginBottom: 12, transition: 'color 0.35s ease' }}>
+              Duti<span style={{ color: t.gold }}>va</span>
             </div>
-            <button onClick={() => navigate('/login')} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: t.bgSlate, color: t.text, padding: '16px 32px', borderRadius: 100, fontSize: 15, fontWeight: 500, border: 'none', cursor: 'pointer', transition: 'background-color 0.2s, color 0.35s ease' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = t.bgSlateH}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = t.bgSlate}>
-              {x.heroLogin}
-            </button>
+            <div className="du-fade-up-1" style={{ display: 'inline-block', fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: t.gold, border: `1px solid ${t.goldBorder}`, padding: '4px 14px', borderRadius: 3, marginBottom: 32, transition: trans }}>
+              Canada
+            </div>
+            <p className="du-fade-up-2" style={{ fontSize: 'clamp(16px, 1.8vw, 19px)', color: t.textMid, fontWeight: 300, maxWidth: 480, lineHeight: 1.75, marginBottom: 44, transition: 'color 0.35s ease' }}>
+              {x.heroTagline}
+            </p>
+
+            <div className="du-hero-cta du-fade-up-3" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: '100%', maxWidth: 400 }}>
+              <a href="#waitlist" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: t.gold, color: '#111', padding: '16px 32px', borderRadius: 100, fontSize: 15, fontWeight: 600, textDecoration: 'none', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s, transform 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = t.goldH; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = t.gold; e.currentTarget.style.transform = 'translateY(0)' }}>
+                {x.heroCta}
+              </a>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', color: t.textMuted, fontSize: 13 }}>
+                <div style={{ flex: 1, height: 1, backgroundColor: t.border }} />
+                {x.heroOr}
+                <div style={{ flex: 1, height: 1, backgroundColor: t.border }} />
+              </div>
+              <button onClick={() => navigate('/login')} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: t.bgSlate, color: t.text, padding: '16px 32px', borderRadius: 100, fontSize: 15, fontWeight: 500, border: 'none', cursor: 'pointer', transition: 'background-color 0.2s, color 0.35s ease' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = t.bgSlateH}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = t.bgSlate}>
+                {x.heroLogin}
+              </button>
+            </div>
+
+            <div className="du-hero-pills du-fade-up-4" style={{ marginTop: 44, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              {[x.pill1, x.pill2, x.pill3, x.pill4, x.pill5].map(p => (
+                <span key={p} style={{ fontSize: 12, color: t.pillText, backgroundColor: t.pillBg, border: `1px solid ${t.border}`, padding: '5px 14px', borderRadius: 100, letterSpacing: '0.02em', transition: trans }}>
+                  {p}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="du-fade-up-4" style={{ marginTop: 52, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            {[x.pill1, x.pill2, x.pill3, x.pill4, x.pill5].map(p => (
-              <span key={p} style={{ fontSize: 12, color: t.pillText, backgroundColor: t.pillBg, border: `1px solid ${t.border}`, padding: '5px 14px', borderRadius: 100, letterSpacing: '0.02em', transition: trans }}>
-                {p}
-              </span>
+          {/* Right / desktop feature panel — hidden on mobile */}
+          <div className="du-hero-side" style={{ display: 'none', flex: '0 0 420px', flexDirection: 'column', gap: 12 }}>
+            {[
+              ['⚖️', x.f1h, x.f1p],
+              ['🌐', x.f2h, x.f2p],
+              ['📄', x.f4h, x.f4p],
+            ].map(([icon, h, p]) => (
+              <div key={h} style={{ backgroundColor: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 14, padding: '20px 22px', display: 'flex', gap: 14, alignItems: 'flex-start', transition: trans }}>
+                <div style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: t.goldDim, border: `1px solid ${t.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{icon}</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 4 }}>{h}</div>
+                  <div style={{ fontSize: 12, color: t.textMid, lineHeight: 1.55 }}>{p}</div>
+                </div>
+              </div>
             ))}
+            <div style={{ backgroundColor: t.bgCard, border: `1px solid ${t.goldBorder}`, borderRadius: 14, padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: trans }}>
+              <div style={{ fontSize: 13, color: t.textMid }}>Jurisdictions covered</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['ON','QC','BC','AB','FED'].map(p => (
+                  <span key={p} style={{ fontSize: 10, fontWeight: 700, color: t.gold, backgroundColor: t.goldDim, border: `1px solid ${t.goldBorder}`, padding: '3px 7px', borderRadius: 4 }}>{p}</span>
+                ))}
+                <span style={{ fontSize: 10, fontWeight: 700, color: t.textSoft, padding: '3px 7px' }}>+9</span>
+              </div>
+            </div>
           </div>
+
         </div>
       </section>
 
       {/* ══ FEATURES ══ */}
       <section id="features" className="du-section du-reveal" style={{ ...sectionBase, borderTop: `1px solid ${t.border}` }}>
-        <div style={{ maxWidth: 580, marginBottom: 64 }}>
-          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, marginBottom: 16 }}>{x.featLabel}</div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(30px, 4vw, 48px)', fontWeight: 500, lineHeight: 1.15, color: t.text, marginBottom: 18 }}>{x.featTitle}</h2>
-          <p style={{ fontSize: 16, color: t.textMid, fontWeight: 300, lineHeight: 1.8 }}>{x.featSub}</p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', border: `1px solid ${t.border}`, borderRadius: 16, overflow: 'hidden', gap: 1, backgroundColor: t.featGap, boxShadow: t.shadow }}>
-          {[[1, x.f1h, x.f1p], [2, x.f2h, x.f2p], [3, x.f3h, x.f3p], [4, x.f4h, x.f4p]].map(([n, h, p]) => (
-            <FeatureCard key={n} num={`0${n}`} title={h} desc={p} t={t} />
-          ))}
+        <div className="du-inner">
+          <div style={{ maxWidth: 580, marginBottom: 64 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, marginBottom: 16 }}>{x.featLabel}</div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(30px, 4vw, 48px)', fontWeight: 500, lineHeight: 1.15, color: t.text, marginBottom: 18 }}>{x.featTitle}</h2>
+            <p style={{ fontSize: 16, color: t.textMid, fontWeight: 300, lineHeight: 1.8 }}>{x.featSub}</p>
+          </div>
+          <div className="du-features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', border: `1px solid ${t.border}`, borderRadius: 16, overflow: 'hidden', gap: 1, backgroundColor: t.featGap, boxShadow: t.shadow }}>
+            {[[1, x.f1h, x.f1p], [2, x.f2h, x.f2p], [3, x.f3h, x.f3p], [4, x.f4h, x.f4p]].map(([n, h, p]) => (
+              <FeatureCard key={n} num={`0${n}`} title={h} desc={p} t={t} />
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ══ STATS ══ */}
       <section style={{ backgroundColor: t.statsBg, borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}`, padding: '64px 6%', boxShadow: t.shadow, transition: trans }}>
+        <div className="du-inner">
         <div style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'center', flexWrap: 'wrap' }}>
           {[['16', x.stat1], ['14', x.stat2], ['EN/FR', x.stat3], ['🍁', x.stat4]].map(([val, label], i) => (
             <div key={label} className={`du-stat du-reveal${i > 0 ? ` du-d${i}` : ''}`}
@@ -439,10 +522,12 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
+        </div>
       </section>
 
       {/* ══ PRICING ══ */}
       <section id="pricing" className="du-section du-reveal" style={{ ...sectionBase, borderTop: `1px solid ${t.border}` }}>
+        <div className="du-inner">
         <div style={{ maxWidth: 560, marginBottom: 56 }}>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, marginBottom: 16 }}>{x.pricingLabel}</div>
           <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(30px, 4vw, 48px)', fontWeight: 500, lineHeight: 1.15, color: t.text, marginBottom: 18 }}>{x.pricingTitle}</h2>
@@ -496,12 +581,14 @@ export default function LandingPage() {
           {x.pricingNote}{' '}
           <a href="#waitlist" style={{ color: t.gold, textDecoration: 'none' }}>{x.pricingNoteLink}</a>
         </p>
+        </div>
       </section>
 
       {/* ══ WAITLIST ══ */}
       <section id="waitlist" style={{ backgroundColor: t.bg, borderTop: `1px solid ${t.border}`, padding: '120px 6%', textAlign: 'center', position: 'relative', overflow: 'hidden', transition: trans }}>
         <div style={{ position: 'absolute', bottom: -200, left: '50%', transform: 'translateX(-50%)', width: 700, height: 400, borderRadius: '50%', background: `radial-gradient(ellipse, ${t.glowB} 0%, transparent 65%)`, pointerEvents: 'none' }} />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: 520, margin: '0 auto' }}>
+        <div className="du-inner" style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <div className="du-reveal" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, marginBottom: 16 }}>{x.wlLabel}</div>
           <h2 className="du-reveal du-d1" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(30px, 4vw, 48px)', fontWeight: 500, lineHeight: 1.15, color: t.text, marginBottom: 18 }}>{x.wlTitle}</h2>
           <p className="du-reveal du-d2" style={{ fontSize: 16, color: t.textMid, fontWeight: 300, lineHeight: 1.8, marginBottom: 48 }}>{x.wlSub}</p>
@@ -534,10 +621,12 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* ══ ABOUT ══ */}
       <section id="about" className="du-section" style={{ backgroundColor: t.aboutBg, borderTop: `1px solid ${t.border}`, padding: '96px 6%', boxShadow: t.shadow, transition: trans }}>
+        <div className="du-inner">
         <div className="du-reveal">
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, marginBottom: 16 }}>{x.aboutLabel}</div>
           <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(30px, 4vw, 48px)', fontWeight: 500, lineHeight: 1.15, color: t.text, marginBottom: 18 }}>
@@ -569,10 +658,12 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer className="du-footer" style={{ backgroundColor: t.footerBg, borderTop: `1px solid ${t.border}`, padding: '36px 6%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, transition: trans }}>
+      <footer style={{ backgroundColor: t.footerBg, borderTop: `1px solid ${t.border}`, padding: '36px 6%', transition: trans }}>
+        <div className="du-footer-inner du-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, fontWeight: 500, color: t.text }}>
             Duti<span style={{ color: t.gold }}>va</span> Canada Inc.
@@ -587,6 +678,7 @@ export default function LandingPage() {
               {label}
             </a>
           ))}
+        </div>
         </div>
       </footer>
     </div>
