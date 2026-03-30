@@ -208,7 +208,7 @@ const GLOBAL_CSS = `
   .du-fade-up-3 { animation: fadeUp 0.7s 0.19s ease both; }
   .du-fade-up-4 { animation: fadeUp 0.7s 0.25s ease both; }
   /* ── Max-width container ── */
-  .du-inner { max-width: 1200px; margin: 0 auto; width: 100%; }
+  .du-inner { max-width: 1200px; margin: 0 auto; width: 100%; padding-left: 24px; padding-right: 24px; box-sizing: border-box; }
   /* ── Hamburger button ── */
   .du-hamburger { display: none; align-items: center; justify-content: center; cursor: pointer; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 8px; }
   /* ── Mobile nav drawer ── */
@@ -224,9 +224,9 @@ const GLOBAL_CSS = `
     .du-stat { border-right: none !important; border-bottom-width: 1px !important; border-bottom-style: solid !important; }
     .du-stat:last-child { border-bottom: none !important; }
     .du-pricing-grid { grid-template-columns: 1fr !important; max-width: 400px !important; }
-    .du-section { padding: 72px 20px !important; }
-    .du-hero { padding: 110px 20px 72px !important; }
-    .du-nav { padding: 0 20px !important; }
+    .du-section { padding: 72px 0 !important; }
+    .du-hero { padding: 110px 0 72px !important; }
+    .du-inner { padding-left: 20px !important; padding-right: 20px !important; }
     .du-footer-inner { flex-direction: column !important; align-items: flex-start !important; }
   }
   /* ── Desktop breakpoints ── */
@@ -318,7 +318,7 @@ export default function LandingPage() {
 
   /* ── Shared style helpers ── */
   const trans = 'background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease'
-  const sectionBase = { padding: '96px 6%', transition: trans, backgroundColor: t.bg }
+  const sectionBase = { padding: '96px 0', transition: trans, backgroundColor: t.bg }
 
   return (
     <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "'DM Sans', sans-serif", transition: trans, minHeight: '100vh' }}>
@@ -330,7 +330,7 @@ export default function LandingPage() {
         borderBottom: `1px solid ${t.border}`, transition: trans,
       }}>
         {/* Nav inner */}
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 6%', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <a href="#hero" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 500, color: t.text, lineHeight: 1, transition: 'color 0.35s ease' }}>
               Duti<span style={{ color: t.gold }}>va</span>
@@ -418,7 +418,7 @@ export default function LandingPage() {
       <section id="hero" className="du-hero" style={{
         minHeight: '100vh', backgroundColor: t.bg,
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '130px 6% 90px', textAlign: 'center', position: 'relative', overflow: 'hidden',
+        padding: '130px 0 90px', textAlign: 'center', position: 'relative', overflow: 'hidden',
         transition: trans,
       }}>
         {/* Glow */}
@@ -511,7 +511,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ STATS ══ */}
-      <section style={{ backgroundColor: t.statsBg, borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}`, padding: '64px 6%', boxShadow: t.shadow, transition: trans }}>
+      <section style={{ backgroundColor: t.statsBg, borderTop: `1px solid ${t.border}`, borderBottom: `1px solid ${t.border}`, padding: '64px 0', boxShadow: t.shadow, transition: trans }}>
         <div className="du-inner">
         <div style={{ display: 'flex', alignItems: 'stretch', justifyContent: 'center', flexWrap: 'wrap' }}>
           {[['16', x.stat1], ['14', x.stat2], ['EN/FR', x.stat3], ['🍁', x.stat4]].map(([val, label], i) => (
@@ -585,7 +585,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ WAITLIST ══ */}
-      <section id="waitlist" style={{ backgroundColor: t.bg, borderTop: `1px solid ${t.border}`, padding: '120px 6%', textAlign: 'center', position: 'relative', overflow: 'hidden', transition: trans }}>
+      <section id="waitlist" style={{ backgroundColor: t.bg, borderTop: `1px solid ${t.border}`, padding: '120px 0', textAlign: 'center', position: 'relative', overflow: 'hidden', transition: trans }}>
         <div style={{ position: 'absolute', bottom: -200, left: '50%', transform: 'translateX(-50%)', width: 700, height: 400, borderRadius: '50%', background: `radial-gradient(ellipse, ${t.glowB} 0%, transparent 65%)`, pointerEvents: 'none' }} />
         <div className="du-inner" style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
@@ -625,7 +625,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ ABOUT ══ */}
-      <section id="about" className="du-section" style={{ backgroundColor: t.aboutBg, borderTop: `1px solid ${t.border}`, padding: '96px 6%', boxShadow: t.shadow, transition: trans }}>
+      <section id="about" className="du-section" style={{ backgroundColor: t.aboutBg, borderTop: `1px solid ${t.border}`, padding: '96px 0', boxShadow: t.shadow, transition: trans }}>
         <div className="du-inner">
         <div className="du-reveal">
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.gold, marginBottom: 16 }}>{x.aboutLabel}</div>
@@ -662,7 +662,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer style={{ backgroundColor: t.footerBg, borderTop: `1px solid ${t.border}`, padding: '36px 6%', transition: trans }}>
+      <footer style={{ backgroundColor: t.footerBg, borderTop: `1px solid ${t.border}`, padding: '36px 0', transition: trans }}>
         <div className="du-footer-inner du-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, fontWeight: 500, color: t.text }}>
