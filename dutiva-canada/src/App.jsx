@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 import {
   signUp, logIn, logOut, getSession, onAuthChange,
   loadProfile, updateProfile,
@@ -1277,7 +1279,7 @@ function parseMarkdown(text) {
 // ═══════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════
-export default function Dutiva() {
+function Dutiva() {
   const [lang, setLang] = useState("en");
   const [screen, setScreen] = useState("loading");
   const [sel, setSel] = useState(null);
@@ -2830,5 +2832,16 @@ FORMAT: Use ## for headers. **Bold** for legislation, section numbers, deadlines
       </div>
 
     </div></>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/*" element={<Dutiva />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
